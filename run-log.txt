@@ -1,2 +1,14 @@
-run: 2026-11-11T06:18Z (push)
-ANA login failed (HTTP 401): {"_error": "{\"status\":\"UNAUTHORIZED\",\"code\":401,\"message\":\"Usu\u00e1rio sem permiss\u00e3o de acesso ao m\u00f3dulo. Verifique!\",\"items\":null}"}
+run: 2026-11-11T06:24Z (push)
+ANA login OK
+manaus (14990000)
+  sample row: {"Chuva_Adotada": "0.00", "Chuva_Adotada_Status": "0", "Cota_Adotada": "1645.00", "Cota_Adotada_Status": "0", "Data_Atualizacao": "2026-11-01 01:02:57.28", "Data_Hora_Medicao": "2026-11-01 01:00:00.0", "Vazao_Adotada": null, "Vazao_Adotada_Status": null, "codigoestacao": "14990000"}
+  HidroinfoanaSerieTelemetricaAdotada: 2862 readings over 31 days
+  latest ['2026-11-11', 16.35]  24h change -0.01
+barcelos (14480002)
+  sample row: {"Chuva_Adotada": "0.00", "Chuva_Adotada_Status": "0", "Cota_Adotada": "386.00", "Cota_Adotada_Status": "0", "Data_Atualizacao": "2026-11-01 01:09:20.76", "Data_Hora_Medicao": "2026-11-01 01:00:00.0", "Vazao_Adotada": null, "Vazao_Adotada_Status": null, "codigoestacao": "14480002"}
+  HidroinfoanaSerieTelemetricaAdotada: 2239 readings over 24 days
+  latest ['2026-11-04', 3.64]  24h change -0.06
+saogabriel (14320001)
+  HidroinfoanaSerieTelemetricaAdotada: HTTP 200, no items. {"status": "OK", "code": 200, "message": "N\u00e3o houve retorno de registros. Verifique!", "items": []}
+  HidroinfoanaSerieTelemetricaDetalhada: HTTP 200, no items. {"status": "OK", "code": 200, "message": "N\u00e3o houve retorno de registros. Verifique!", "items": []}
+  no data this run, keeping previous values
