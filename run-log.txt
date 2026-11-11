@@ -1,4 +1,4 @@
-run: 2026-11-11T06:55Z (push)
+run: 2026-11-11T06:58Z (push)
 ANA login OK
 manaus (14990000)
   31 days, 2025-01-01 to 2026-11-11, latest 16.35 m, 24h -0.01
@@ -8,3 +8,7 @@ saogabriel (14330000)
   31 days, 2025-01-01 to 2026-11-11, latest 7.76 m, 24h -0.01
 santamaria (14790000)
   29 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
+station search
+  AM: HTTP 200
+    {"Bacia_Nome": "RIO AMAZONAS", "Codigo_Adicional": "PT62", "Codigo_Operadora_Unidade_UF": "3", "Estacao_Nome": "SANTA ISABEL DO RIO NEGRO", "Latitude": "-0.42944", "Longitude": "-65.010455", "Municipio_Codigo": "3036000", "Municipio_Nome": "SANTA IZABEL DO RIO NEGRO", "Operadora_Codigo": "756", "Operando": "1", "Responsavel_Codigo": "756", "Rio_Codigo": "12250050", "Rio_Nome": "RIO NEGRO", "Sub_Bacia_Codigo": "12", "Sub_Bacia_Nome": "RIO SOLIMÕES,JURUÁ,JAPURÁ,....", "Tipo_Estacao_Telemetrica": "0", "UF_Nome_Estacao": "AMAZONAS", "codigobacia": "1", "codigoestacao": "12872400"}
+    {"Bacia_Nome": "RIO AMAZONAS", "Codigo_Adicional": "ANA", "Codigo_Operadora_Unidade_UF": "3", "Data_Periodo_Telemetrica_Fim": "2017-04-01 00:00:00.0", "Data_Periodo_Telemetrica_Inicio": "2012-08-01 00:00:00.0", "Estacao_Nome": "TAPURUQUARA", "Latitude": "-0.4203", "Longitude": "-65.0153", "Municipio_Codigo": "3036000", "Municipio_Nome": "SANTA IZABEL DO RIO NEGRO", "Operadora_Codigo": "82", "Operando": "1", "Responsavel_Codigo": "1", "Rio_Codigo": "14200000", "Rio_Nome": "RIO NEGRO", "Sub_Bacia_Codigo": "14", "Sub_Bacia_Nome": "RIO SOLIMÕES,NEGRO,BRANCO,....", "Tipo_Estacao_Telemetrica": "0", "UF_Nome_Estacao": "AMAZONAS", "codigobacia": "1", "codigoestacao": "14400000"}
