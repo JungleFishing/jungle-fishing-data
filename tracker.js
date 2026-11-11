@@ -1,7 +1,7 @@
 /* Jungle Fishing · Water Tracker
    Loaded on jungle-fishing.com/water-tracker by a small embed:
      <div id="jf-water-tracker"></div>
-     <script src="https://cdn.jsdelivr.net/gh/JungleFishing/jungle-fishing-data@main/tracker.js" defer></script>
+     <script src="https://junglefishing.github.io/jungle-fishing-data/tracker.js" defer></script>
    Reads data.json from this repo (updated every morning by the GitHub job).
    The readings inside are a fallback snapshot used only if data.json can't load. */
 (function(){

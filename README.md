@@ -4,7 +4,7 @@ Feeds the Water Tracker on jungle-fishing.com/water-tracker.
 
 - `data.json`: daily Rio Negro levels (metres) for Manaus, Barcelos and São Gabriel da Cachoeira.
 - `scripts/update.py`: pulls the last 30 days of gauge telemetry from ANA (Agência Nacional de Águas) HidroWebService and merges it into `data.json`.
-- `tracker.js`: the Water Tracker itself. Webflow only holds a two-line loader, so edits here go live without touching Webflow (the job clears the jsDelivr cache).
+- `tracker.js`: the Water Tracker itself. Webflow only holds a two-line loader that pulls it from GitHub Pages (junglefishing.github.io/jungle-fishing-data), so edits here go live within minutes without touching Webflow.
 - `home.js`: updates the homepage hero level and the small Manaus chart from `data.json`.
 - `.github/workflows/update.yml`: runs the script every morning (~7am Manaus time) and commits the result.
 

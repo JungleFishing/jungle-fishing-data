@@ -1,7 +1,7 @@
 /* Jungle Fishing · homepage water widgets
    Updates the hero "Rio Negro · Manaus" level and the small Water Tracker
    chart on the homepage from data.json (refreshed every morning by the
-   GitHub job). Loaded from the homepage footer code via jsDelivr. If the
+   GitHub job). Loaded from the homepage footer code via GitHub Pages. If the
    data can't load, the numbers typed into Webflow stay as they are. */
 (function () {
   var URL = 'https://raw.githubusercontent.com/JungleFishing/jungle-fishing-data/main/data.json';
