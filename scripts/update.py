@@ -99,6 +99,32 @@ def fetch_station(token, code):
     return {}
 
 
+def discover(token, names=("GABRIEL", "CURICURIARI", "BARCELOS")):
+    """Log telemetric stations whose name matches, to find the right codes."""
+    import re
+    auth = {"Authorization": f"Bearer {token}"}
+    for path, params in [
+        ("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Unidade Federativa": "AM"}),
+        ("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Código da Estação": 14320001}),
+    ]:
+        status, body = http_get(path, params, auth)
+        items = body.get("items") if isinstance(body, dict) else None
+        print(f"  inventory {params}: HTTP {status}, {len(items) if isinstance(items, list) else 0} items {'' if items else json.dumps(body)[:200]}")
+        for row in items or []:
+            txt = json.dumps(row, ensure_ascii=False)
+            if any(n in txt.upper() for n in names):
+                print("   ", txt[:400])
+    try:  # legacy public list of telemetric stations (no login)
+        url = "https://telemetriaws1.ana.gov.br/ServiceANA.asmx/ListaEstacoesTelemetricas?statusEstacoes=0&origem="
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "jungle-fishing-tracker/1.0"}), timeout=90) as r:
+            xml = r.read().decode("utf-8", "replace")
+        for block in re.findall(r"<Table>(.*?)</Table>", xml, re.S):
+            if any(n in block.upper() for n in names):
+                print("    legacy:", " ".join(re.sub(r"\s+", " ", block).split())[:400])
+    except Exception as e:
+        print("  legacy list failed:", e)
+
+
 def main():
     with open(DATA_FILE) as f:
         data = json.load(f)
@@ -133,6 +159,9 @@ def main():
             st["d24"] = round(v1 - v0, 2) if gap == 1 else None
         print(f"  latest {st['daily'][-1]}  24h change {st.get('d24')}")
         any_new = any_new or bool(daily)
+    if DEBUG:
+        print("station search")
+        discover(token)
     if any_new:
         data["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
         data["source"] = "ANA HidroWebService telemetry"
