@@ -166,6 +166,13 @@ def main():
         st["latest"] = st["daily"][-1][0]
         print(f"  {len(daily)} days, {st['daily'][0][0]} to {st['latest']}, latest {st['daily'][-1][1]} m, 24h {st['d24']}")
         any_new = any_new or bool(daily)
+    probe = os.path.join(os.path.dirname(__file__), "probe.txt")  # gauge codes to test, one per line
+    if os.path.exists(probe):
+        print("gauge probe")
+        for c in [l.strip() for l in open(probe) if l.strip()]:
+            got = fetch_window(token, int(c), today)
+            vals = [round(mean(v) / 100, 2) for d, v in sorted(got.items())]
+            print(f"  {c}: {len(got)} days{', last ' + max(got) + ' ' + str(vals[-1]) + ' m' if got else ''}")
     req = os.path.join(os.path.dirname(__file__), "discover.txt")  # e.g. "RR,AM: BRANCO, BOIA"
     if os.path.exists(req):
         ufs, names = open(req).read().split(":", 1)
