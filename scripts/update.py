@@ -20,8 +20,8 @@ BASE = "https://www.ana.gov.br/hidrowebservice"
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data.json")
 # id -> ANA telemetry gauge code. The upper Rio Negro uses the Curicuriari gauge
 # (Rio Negro just below São Gabriel); São Gabriel's own gauge (14320001) has
-# sent no telemetry since 2017.
-STATIONS = {"manaus": 14990000, "barcelos": 14480002, "saogabriel": 14330000}
+# sent no telemetry since 2017. Santa Maria do Boiaçu (14790000) is on the lower Rio Branco.
+STATIONS = {"manaus": 14990000, "barcelos": 14480002, "saogabriel": 14330000, "santamaria": 14790000}
 MANAUS_TZ = timezone(timedelta(hours=-4))
 DEBUG = os.environ.get("JF_DEBUG") == "1"
 
