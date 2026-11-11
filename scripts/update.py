@@ -27,6 +27,20 @@ DEBUG = os.environ.get("JF_DEBUG") == "1"
 
 
 def http_get(path, params=None, headers=None):
+    """GET with retries: ANA's server sometimes answers 503 or times out for a few minutes."""
+    import time
+    for wait in (20, 60, 180, 0):
+        status, body = _get(path, params, headers)
+        if status == 0 or status >= 500:
+            if wait:
+                print(f"    ANA busy (HTTP {status}), retrying in {wait}s")
+                time.sleep(wait)
+                continue
+        return status, body
+    return status, body
+
+
+def _get(path, params=None, headers=None):
     url = f"{BASE}/{path}"
     if params:
         url += "?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
