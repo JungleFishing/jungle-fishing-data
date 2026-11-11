@@ -8,7 +8,3 @@ saogabriel (14330000)
   31 days, 2025-01-01 to 2026-11-11, latest 7.76 m, 24h -0.01
 santamaria (14790000)
   29 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
-gauge probe
-  14400000: 0 days
-  12872400: 0 days
-  14427900: 0 days
