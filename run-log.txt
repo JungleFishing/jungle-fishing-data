@@ -1,4 +1,4 @@
-run: 2026-11-11T06:48Z (push)
+run: 2026-11-11T06:49Z (push)
 ANA login OK
 manaus (14990000)
   31 days, 2025-01-01 to 2026-11-11, latest 16.35 m, 24h -0.01
@@ -6,5 +6,5 @@ barcelos (14480002)
   24 days, 2025-01-01 to 2026-11-04, latest 3.64 m, 24h -0.06
 saogabriel (14330000)
   31 days, 2025-01-01 to 2026-11-11, latest 7.76 m, 24h -0.01
-santamaria (14790000) backfill
-  678 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
+santamaria (14790000)
+  29 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
