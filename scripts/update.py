@@ -113,11 +113,14 @@ def discover(token, names=("GABRIEL", "CURICURIARI", "BARCELOS")):
         for row in items or []:
             txt = json.dumps(row, ensure_ascii=False)
             if any(n in txt.upper() for n in names):
-                print("   ", txt[:400])
+                keep = {k: v for k, v in row.items() if v not in (None, "") and any(w in k.lower() for w in
+                        ("nome", "codigo", "municipio", "telemet", "tipo", "operando", "latitude", "longitude", "responsavel", "rio"))}
+                print("   ", json.dumps(keep, ensure_ascii=False))
     try:  # legacy public list of telemetric stations (no login)
         url = "https://telemetriaws1.ana.gov.br/ServiceANA.asmx/ListaEstacoesTelemetricas?statusEstacoes=0&origem="
         with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "jungle-fishing-tracker/1.0"}), timeout=90) as r:
             xml = r.read().decode("utf-8", "replace")
+        print(f"  legacy list: {len(xml)} chars")
         for block in re.findall(r"<Table>(.*?)</Table>", xml, re.S):
             if any(n in block.upper() for n in names):
                 print("    legacy:", " ".join(re.sub(r"\s+", " ", block).split())[:400])
