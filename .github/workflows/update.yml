@@ -11,7 +11,7 @@ on:
         default: true
   push:                      # re-run whenever the script itself changes
     branches: [main]
-    paths: ["scripts/**", ".github/workflows/**", "tracker.js"]
+    paths: ["scripts/**", ".github/workflows/**", "tracker.js", "home.js"]
 
 permissions:
   contents: write
@@ -47,7 +47,7 @@ jobs:
           git add data.json run-log.txt
           git diff --cached --quiet || git commit -m "River levels $(date -u +%Y-%m-%d)"
           git push
-          curl -s -m 30 https://purge.jsdelivr.net/gh/JungleFishing/jungle-fishing-data@main/tracker.js >/dev/null || true
+          for f in tracker.js home.js; do curl -s -m 30 https://purge.jsdelivr.net/gh/JungleFishing/jungle-fishing-data@main/$f >/dev/null || true; done
       - name: Report failure
         if: steps.pull.outcome == 'failure'
         run: exit 1
