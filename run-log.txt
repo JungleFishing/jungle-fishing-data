@@ -1,2 +1,10 @@
-run: 2026-11-11T12:05Z (schedule)
-ANA login failed (HTTP 503): {"_error": "<html>\r\n  <head>\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n\r\n    <style type=\"text/css\">\r\n      body {\r\n        font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\r\n        line-height: 1.66666667;\r\n        font-size: 16px
+run: 2026-11-11T13:48Z (push)
+ANA login OK
+manaus (14990000)
+  31 days, 2025-01-01 to 2026-11-11, latest 16.34 m, 24h -0.02
+barcelos (14480002)
+  24 days, 2025-01-01 to 2026-11-04, latest 3.64 m, 24h -0.06
+saogabriel (14330000)
+  31 days, 2025-01-01 to 2026-11-11, latest 7.75 m, 24h -0.02
+santamaria (14790000)
+  29 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
