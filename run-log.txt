@@ -1,8 +1,8 @@
-run: 2026-11-11T06:34Z (push)
+run: 2026-11-11T06:39Z (push)
 ANA login OK
-manaus (14990000) backfill
-  680 days, 2025-01-01 to 2026-11-11, latest 16.35 m, 24h -0.01
-barcelos (14480002) backfill
-  661 days, 2025-01-01 to 2026-11-04, latest 3.64 m, 24h -0.06
-saogabriel (14330000) backfill
-  678 days, 2025-01-01 to 2026-11-11, latest 7.76 m, 24h -0.01
+manaus (14990000)
+  31 days, 2025-01-01 to 2026-11-11, latest 16.35 m, 24h -0.01
+barcelos (14480002)
+  24 days, 2025-01-01 to 2026-11-04, latest 3.64 m, 24h -0.06
+saogabriel (14330000)
+  31 days, 2025-01-01 to 2026-11-11, latest 7.76 m, 24h -0.01
