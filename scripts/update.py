@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# rerun: 2026-11-11 after ANA web login
 """
 Jungle Fishing water tracker: daily update from ANA HidroWebService.
 
