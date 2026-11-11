@@ -9,9 +9,16 @@ on:
         description: "Print a sample row from ANA"
         type: boolean
         default: true
+  push:                      # re-run whenever the script itself changes
+    branches: [main]
+    paths: ["scripts/**", ".github/workflows/**"]
 
 permissions:
   contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -23,15 +30,23 @@ jobs:
         with:
           python-version: "3.12"
       - name: Pull latest levels from ANA
+        id: pull
+        continue-on-error: true
         env:
           ANA_IDENTIFICADOR: ${{ secrets.ANA_IDENTIFICADOR }}
           ANA_SENHA: ${{ secrets.ANA_SENHA }}
-          JF_DEBUG: ${{ inputs.debug && '1' || '0' }}
-        run: python scripts/update.py
-      - name: Save data.json
+          JF_DEBUG: ${{ (github.event_name == 'push' || inputs.debug) && '1' || '0' }}
+        run: |
+          set -o pipefail
+          { echo "run: $(date -u +%Y-%m-%dT%H:%MZ) ($GITHUB_EVENT_NAME)"; python -u scripts/update.py; } 2>&1 | tee run-log.txt
+      - name: Save data.json and run log
+        if: always()
         run: |
           git config user.name "jf-tracker-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data.json
+          git add data.json run-log.txt
           git diff --cached --quiet || git commit -m "River levels $(date -u +%Y-%m-%d)"
           git push
+      - name: Report failure
+        if: steps.pull.outcome == 'failure'
+        run: exit 1
