@@ -24,7 +24,6 @@ DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data.json")
 STATIONS = {"manaus": 14990000, "barcelos": 14480002, "saogabriel": 14330000}
 MANAUS_TZ = timezone(timedelta(hours=-4))
 DEBUG = os.environ.get("JF_DEBUG") == "1"
-DISCOVER = os.environ.get("JF_DISCOVER") == "1"
 
 
 def http_get(path, params=None, headers=None):
@@ -110,11 +109,13 @@ def clean(daily, prior=None):
     return out
 
 
-def discover(token, names=("GABRIEL", "CURICURIARI", "BARCELOS")):
-    """Log telemetric stations whose name matches, to find gauge codes."""
-    status, body = http_get("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Unidade Federativa": "AM"},
-                            {"Authorization": f"Bearer {token}"})
-    for row in (body.get("items") or []) if isinstance(body, dict) else []:
+def discover(token, ufs, names):
+    """Log river-level stations in the given states whose details match, to find gauge codes."""
+    for uf in ufs:
+      status, body = http_get("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Unidade Federativa": uf},
+                              {"Authorization": f"Bearer {token}"})
+      print(f"  {uf}: HTTP {status}")
+      for row in (body.get("items") or []) if isinstance(body, dict) else []:
         txt = json.dumps(row, ensure_ascii=False)
         if any(n in txt.upper() for n in names) and "Fluvio" in str(row.get("Tipo_Estacao")):
             keep = {k: v for k, v in row.items() if v not in (None, "") and any(w in k.lower() for w in
@@ -165,9 +166,11 @@ def main():
         st["latest"] = st["daily"][-1][0]
         print(f"  {len(daily)} days, {st['daily'][0][0]} to {st['latest']}, latest {st['daily'][-1][1]} m, 24h {st['d24']}")
         any_new = any_new or bool(daily)
-    if DISCOVER:
+    req = os.path.join(os.path.dirname(__file__), "discover.txt")  # e.g. "RR,AM: BRANCO, BOIA"
+    if os.path.exists(req):
+        ufs, names = open(req).read().split(":", 1)
         print("station search")
-        discover(token)
+        discover(token, [u.strip() for u in ufs.split(",")], [n.strip().upper() for n in names.split(",") if n.strip()])
     if any_new:
         data["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
         data["source"] = "ANA HidroWebService telemetry"
