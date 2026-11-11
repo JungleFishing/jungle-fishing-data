@@ -1,23 +1,30 @@
 #!/usr/bin/env python3
-# rerun: 2026-11-11 after ANA web login
 """
 Jungle Fishing water tracker: daily update from ANA HidroWebService.
 
-Logs in with ANA_IDENTIFICADOR / ANA_SENHA (GitHub secrets), pulls the last
-30 days of telemetry for each station, turns it into one level per day
-(metres), merges it into data.json and records the 24h change.
+Logs in with ANA_IDENTIFICADOR / ANA_SENHA (GitHub secrets), pulls gauge
+telemetry for each station, turns it into one level per day (metres, mean of
+that day's readings), merges it into data.json and records the 24h change.
+
+First run for a station (or a station whose gauge changed) backfills daily
+data from 1 Jan of last year, replacing the SGB bulletin readings it was seeded
+with. After that each run only fetches the last 30 days.
 
 Standard library only, so the GitHub job needs no installs.
 """
-import json, os, sys, urllib.request, urllib.parse, urllib.error
-from datetime import datetime, timedelta, timezone
+import json, os, re, sys, urllib.request, urllib.parse, urllib.error
+from datetime import date, datetime, timedelta, timezone
 from statistics import mean
 
 BASE = "https://www.ana.gov.br/hidrowebservice"
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data.json")
-STATIONS = {"manaus": 14990000, "barcelos": 14480002, "saogabriel": 14320001}
+# id -> ANA telemetry gauge code. The upper Rio Negro uses the Curicuriari gauge
+# (Rio Negro just below São Gabriel); São Gabriel's own gauge (14320001) has
+# sent no telemetry since 2017.
+STATIONS = {"manaus": 14990000, "barcelos": 14480002, "saogabriel": 14330000}
 MANAUS_TZ = timezone(timedelta(hours=-4))
 DEBUG = os.environ.get("JF_DEBUG") == "1"
+DISCOVER = os.environ.get("JF_DISCOVER") == "1"
 
 
 def http_get(path, params=None, headers=None):
@@ -26,11 +33,12 @@ def http_get(path, params=None, headers=None):
         url += "?" + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
     req = urllib.request.Request(url, headers={"accept": "*/*", "User-Agent": "jungle-fishing-tracker/1.0", **(headers or {})})
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
+        with urllib.request.urlopen(req, timeout=90) as r:
             return r.status, json.loads(r.read().decode("utf-8", "replace") or "{}")
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", "replace")[:500]
-        return e.code, {"_error": body}
+        return e.code, {"_error": e.read().decode("utf-8", "replace")[:500]}
+    except Exception as e:  # timeouts, resets
+        return 0, {"_error": str(e)[:300]}
 
 
 def login():
@@ -49,8 +57,7 @@ def login():
 
 def find_key(row, *words):
     for k in row:
-        kl = k.lower()
-        if all(w in kl for w in words):
+        if all(w in k.lower() for w in words):
             return k
     return None
 
@@ -62,107 +69,103 @@ def to_num(v):
         return None
 
 
-def fetch_station(token, code):
-    """Return {YYYY-MM-DD: [levels in cm]} for the last 30 days."""
-    auth = {"Authorization": f"Bearer {token}"}
-    today = datetime.now(MANAUS_TZ).strftime("%Y-%m-%d")
-    attempts = [
-        ("EstacoesTelemetricas/HidroinfoanaSerieTelemetricaAdotada/v1",
-         {"Código da Estação": code, "Tipo Filtro Data": "DATA_LEITURA",
-          "Data de Busca (yyyy-MM-dd)": today, "Range Intervalo de busca": "DIAS_30"}),
-        ("EstacoesTelemetricas/HidroinfoanaSerieTelemetricaDetalhada/v1",
-         {"Código da Estação": code, "Tipo Filtro Data": "DATA_LEITURA",
-          "Data de Busca (yyyy-MM-dd)": today, "Range Intervalo de busca": "DIAS_30"}),
-    ]
-    for path, params in attempts:
-        status, body = http_get(path, params, auth)
-        items = body.get("items") if isinstance(body, dict) else None
-        if not isinstance(items, list) or not items:
-            print(f"  {path.split('/')[1]}: HTTP {status}, no items. {json.dumps(body)[:300]}")
+def fetch_window(token, code, end_day):
+    """{YYYY-MM-DD: [levels in cm]} for the 30 days up to end_day."""
+    params = {"Código da Estação": code, "Tipo Filtro Data": "DATA_LEITURA",
+              "Data de Busca (yyyy-MM-dd)": end_day.isoformat(), "Range Intervalo de busca": "DIAS_30"}
+    status, body = http_get("EstacoesTelemetricas/HidroinfoanaSerieTelemetricaAdotada/v1", params,
+                            {"Authorization": f"Bearer {token}"})
+    items = body.get("items") if isinstance(body, dict) else None
+    if not isinstance(items, list) or not items:
+        if status != 200:
+            print(f"    {end_day}: HTTP {status} {json.dumps(body)[:200]}")
+        return {}
+    kd = find_key(items[0], "data", "hora", "medicao") or find_key(items[0], "data", "hora")
+    kc = find_key(items[0], "cota", "adotada") or find_key(items[0], "cota")
+    ks = find_key(items[0], "cota", "status")
+    days = {}
+    for row in items:
+        v, d = to_num(row.get(kc)), str(row.get(kd) or "")[:10]
+        if v is None or len(d) != 10 or v <= 0:
             continue
-        sample = items[0]
-        if DEBUG:
-            print("  sample row:", json.dumps(sample)[:600])
-        kd = find_key(sample, "data", "hora") or find_key(sample, "data")
-        kc = find_key(sample, "cota", "adotada") or find_key(sample, "cota")
-        if not kd or not kc:
-            print(f"  {path.split('/')[1]}: unexpected fields {list(sample)[:12]}")
-            continue
-        days = {}
-        for row in items:
-            v, d = to_num(row.get(kc)), str(row.get(kd) or "")[:10]
-            if v is None or len(d) != 10:
+        if ks and str(row.get(ks) or "0") not in ("0", "", "None"):
+            continue  # flagged reading
+        days.setdefault(d, []).append(v)
+    return days
+
+
+def clean(daily, prior=None):
+    """Drop days that jump more than rivers here can move (~0.4 m/day)."""
+    out, last_d, last = {}, None, None
+    if prior:
+        last_d, last = prior
+    for d in sorted(daily):
+        if last is not None:
+            gap = max(1, (date.fromisoformat(d) - date.fromisoformat(last_d)).days)
+            if abs(daily[d] - last) > max(1.5, 0.4 * gap):
+                print(f"    skip {d}: {daily[d]} m next to {last} m on {last_d}")
                 continue
-            days.setdefault(d, []).append(v)
-        print(f"  {path.split('/')[1]}: {len(items)} readings over {len(days)} days")
-        return days
-    return {}
+        out[d] = daily[d]
+        last_d, last = d, daily[d]
+    return out
 
 
 def discover(token, names=("GABRIEL", "CURICURIARI", "BARCELOS")):
-    """Log telemetric stations whose name matches, to find the right codes."""
-    import re
-    auth = {"Authorization": f"Bearer {token}"}
-    for path, params in [
-        ("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Unidade Federativa": "AM"}),
-        ("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Código da Estação": 14320001}),
-    ]:
-        status, body = http_get(path, params, auth)
-        items = body.get("items") if isinstance(body, dict) else None
-        print(f"  inventory {params}: HTTP {status}, {len(items) if isinstance(items, list) else 0} items {'' if items else json.dumps(body)[:200]}")
-        for row in items or []:
-            txt = json.dumps(row, ensure_ascii=False)
-            if any(n in txt.upper() for n in names):
-                keep = {k: v for k, v in row.items() if v not in (None, "") and any(w in k.lower() for w in
-                        ("nome", "codigo", "municipio", "telemet", "tipo", "operando", "latitude", "longitude", "responsavel", "rio"))}
-                print("   ", json.dumps(keep, ensure_ascii=False))
-    try:  # legacy public list of telemetric stations (no login)
-        url = "https://telemetriaws1.ana.gov.br/ServiceANA.asmx/ListaEstacoesTelemetricas?statusEstacoes=0&origem="
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "jungle-fishing-tracker/1.0"}), timeout=90) as r:
-            xml = r.read().decode("utf-8", "replace")
-        print(f"  legacy list: {len(xml)} chars")
-        for block in re.findall(r"<Table>(.*?)</Table>", xml, re.S):
-            if any(n in block.upper() for n in names):
-                print("    legacy:", " ".join(re.sub(r"\s+", " ", block).split())[:400])
-    except Exception as e:
-        print("  legacy list failed:", e)
+    """Log telemetric stations whose name matches, to find gauge codes."""
+    status, body = http_get("EstacoesTelemetricas/HidroInventarioEstacoes/v1", {"Unidade Federativa": "AM"},
+                            {"Authorization": f"Bearer {token}"})
+    for row in (body.get("items") or []) if isinstance(body, dict) else []:
+        txt = json.dumps(row, ensure_ascii=False)
+        if any(n in txt.upper() for n in names) and "Fluvio" in str(row.get("Tipo_Estacao")):
+            keep = {k: v for k, v in row.items() if v not in (None, "") and any(w in k.lower() for w in
+                    ("nome", "codigo", "telemet", "operando", "latitude", "longitude"))}
+            print("   ", json.dumps(keep, ensure_ascii=False))
 
 
 def main():
     with open(DATA_FILE) as f:
         data = json.load(f)
     token = login()
+    today = datetime.now(MANAUS_TZ).date()
     any_new = False
     for sid, code in STATIONS.items():
-        print(f"{sid} ({code})")
-        st = data["stations"][sid]
-        days = fetch_station(token, code)
-        if not days:
+        st = data["stations"].setdefault(sid, {"daily": [], "d24": None})
+        backfill = st.get("gauge") != code
+        print(f"{sid} ({code}){' backfill' if backfill else ''}")
+        raw = {}
+        if backfill:
+            end = today
+            while end >= date(today.year - 1, 1, 1):
+                for d, v in fetch_window(token, code, end).items():
+                    raw.setdefault(d, []).extend(v)
+                end -= timedelta(days=30)
+        else:
+            raw = fetch_window(token, code, today)
+        daily = {d: round(mean(v) / 100, 2) for d, v in raw.items() if v}
+        if not daily:
             print("  no data this run, keeping previous values")
             continue
-        daily = {d: round(mean(v) / 100, 2) for d, v in days.items() if v}
-        # sanity check against the last stored value: telemetry glitches can be metres off
-        # (rivers here move at most ~0.4 m a day, so allow that per day of gap)
-        prior = [x for x in st["daily"] if x[0] < min(daily)] if daily else []
-        last_d, last = (prior[-1] if prior else (None, None))
-        for d in sorted(daily):
-            if last is not None:
-                gap = max(1, (datetime.fromisoformat(d) - datetime.fromisoformat(last_d)).days)
-                if abs(daily[d] - last) > max(1.5, 0.4 * gap):
-                    print(f"  skip {d}: {daily[d]} m looks wrong next to {last} m on {last_d}")
-                    del daily[d]
-                    continue
-            last_d, last = d, daily[d]
-        merged = {d: v for d, v in st["daily"]}
-        merged.update(daily)
-        st["daily"] = sorted([[d, v] for d, v in merged.items()])
+        if backfill:
+            if len(daily) < 30:
+                print(f"  only {len(daily)} days of history, keeping previous values")
+                continue
+            start = date(today.year - 1, 1, 1).isoformat()
+            daily = clean({d: v for d, v in daily.items() if d >= start})
+            st["daily"] = sorted([[d, v] for d, v in daily.items()])
+            st["gauge"] = code
+        else:
+            prior = [x for x in st["daily"] if x[0] < min(daily)]
+            daily = clean(daily, prior[-1] if prior else None)
+            merged = {d: v for d, v in st["daily"]}
+            merged.update(daily)
+            st["daily"] = sorted([[d, v] for d, v in merged.items()])
         if len(st["daily"]) >= 2:
             (d1, v1), (d0, v0) = st["daily"][-1], st["daily"][-2]
-            gap = (datetime.fromisoformat(d1) - datetime.fromisoformat(d0)).days
-            st["d24"] = round(v1 - v0, 2) if gap == 1 else None
-        print(f"  latest {st['daily'][-1]}  24h change {st.get('d24')}")
+            st["d24"] = round(v1 - v0, 2) if (date.fromisoformat(d1) - date.fromisoformat(d0)).days == 1 else None
+        st["latest"] = st["daily"][-1][0]
+        print(f"  {len(daily)} days, {st['daily'][0][0]} to {st['latest']}, latest {st['daily'][-1][1]} m, 24h {st['d24']}")
         any_new = any_new or bool(daily)
-    if DEBUG:
+    if DISCOVER:
         print("station search")
         discover(token)
     if any_new:
