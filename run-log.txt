@@ -1,7 +1,7 @@
-run: 2026-11-12T12:08Z (schedule)
+run: 2026-11-12T18:00Z (schedule)
 ANA login OK
 manaus (14990000)
-  31 days, 2025-01-01 to 2026-11-12, latest 16.32 m, 24h -0.01
+  31 days, 2025-01-01 to 2026-11-12, latest 16.31 m, 24h -0.02
 barcelos (14480002)
   29 days, 2025-01-01 to 2026-11-10, latest 3.0 m, 24h -0.05
 saogabriel (14330000)
