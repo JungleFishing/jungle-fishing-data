@@ -1,4 +1,4 @@
-run: 2026-11-14T11:50Z (schedule)
+run: 2026-11-14T17:46Z (schedule)
 ANA login OK
 manaus (14990000)
   31 days, 2025-01-01 to 2026-11-14, latest 16.22 m, 24h -0.04
