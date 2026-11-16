@@ -1,10 +1,12 @@
-run: 2026-11-16T12:23Z (schedule)
+run: 2026-11-16T18:11Z (schedule)
 ANA login OK
 manaus (14990000)
+    ANA busy (HTTP 504), retrying in 20s
+    ANA busy (HTTP 504), retrying in 60s
   31 days, 2025-01-01 to 2026-11-16, latest 16.12 m, 24h -0.04
 barcelos (14480002)
   25 days, 2025-01-01 to 2026-11-10, latest 3.0 m, 24h -0.05
 saogabriel (14330000)
-  31 days, 2025-01-01 to 2026-11-16, latest 7.78 m, 24h 0.0
+  31 days, 2025-01-01 to 2026-11-16, latest 7.77 m, 24h -0.01
 santamaria (14790000)
   24 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
