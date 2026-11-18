@@ -1,10 +1,5 @@
-run: 2026-11-17T18:10Z (schedule)
-ANA login OK
-manaus (14990000)
-  31 days, 2025-01-01 to 2026-11-17, latest 16.07 m, 24h -0.04
-barcelos (14480002)
-  25 days, 2025-01-01 to 2026-11-17, latest 2.78 m, 24h None
-saogabriel (14330000)
-  31 days, 2025-01-01 to 2026-11-17, latest 7.74 m, 24h -0.03
-santamaria (14790000)
-  23 days, 2025-01-01 to 2026-11-09, latest 3.04 m, 24h -0.04
+run: 2026-11-18T12:09Z (schedule)
+    ANA busy (HTTP 503), retrying in 20s
+    ANA busy (HTTP 503), retrying in 60s
+    ANA busy (HTTP 503), retrying in 180s
+ANA login failed (HTTP 429): {"_error": "{\"timestamp\":\"2026-11-18T12:14:01.831+00:00\",\"status\":429,\"error\":\"Too Many Requests\",\"path\":\"/hidrowebservice/EstacoesTelemetricas/OAUth/v1\"}"}
