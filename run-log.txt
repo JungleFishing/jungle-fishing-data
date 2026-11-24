@@ -1,10 +1,5 @@
-run: 2026-11-23T18:10Z (schedule)
-ANA login OK
-manaus (14990000)
-  31 days, 2025-01-01 to 2026-11-23, latest 15.86 m, 24h -0.01
-barcelos (14480002)
-  25 days, 2025-01-01 to 2026-11-23, latest 2.71 m, 24h -0.01
-saogabriel (14330000)
-  31 days, 2025-01-01 to 2026-11-23, latest 7.3 m, 24h -0.09
-santamaria (14790000)
-  30 days, 2025-01-01 to 2026-11-22, latest 2.75 m, 24h -0.03
+run: 2026-11-24T12:10Z (schedule)
+    ANA busy (HTTP 503), retrying in 20s
+    ANA busy (HTTP 503), retrying in 60s
+    ANA busy (HTTP 503), retrying in 180s
+ANA login failed (HTTP 504): {"_error": "<html><body><h1>504 Gateway Time-out</h1>\nThe server didn't respond in time.\n</body></html>\n"}
